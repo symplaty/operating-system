@@ -2,9 +2,9 @@
 #include <windows.h>
 #include <stdio.h>
 
-#define STATUS_READY   0
-#define STATUS_BLOCKED 1
-#define STATUS_RUNNING 2
+#define STATUS_RUNNING 0
+#define STATUS_READY   1
+#define STATUS_BLOCKED 2
 #define STATUS_FINISHED 3
 
 using namespace std;
@@ -89,7 +89,7 @@ public:
     cpu(){}
     void create_process();
     void block_process();
-    void delete_process();
+    bool delete_process(int pid);
     void wakeup_process();
     void run_process();
     void print_status();
@@ -113,6 +113,7 @@ bool insert_node(p_node head, int position, p_node pcb_node);
 c_pcb get_node(link_list head, int position, int flag);
 void set_node(link_list head, int position, c_pcb data);
 void delete_node(link_list head);
+bool is_duplicated(int pid);
 
 /**** function for cpu class ****/
 void cpu::create_process(){
@@ -120,34 +121,75 @@ void cpu::create_process(){
     string name; int pid; int time_exp; int priority;
     int status = STATUS_READY;
     int time_reach = cpu_time;
-
-    text_color(0x07);
-    cout << "You are creating a new process, please type in the info:" << endl;
-    cout << "        Process name: ";
-    cin >> name;
-    cout << "                 Pid: ";
-    cin >> pid;
-    cout << "Expected time slices: ";
-    cin >> time_exp;
-    cout << "            Priority: ";
-    cin >> priority;
+    do{
+        text_color(0x07);
+        cout << "You are creating a new process, please type in the info:" << endl;
+        cout << "        Process name: ";
+        cin >> name;
+        cout << "                 Pid: ";
+        cin >> pid;
+        cout << "Expected time slices: ";
+        cin >> time_exp;
+        cout << "            Priority: ";
+        cin >> priority;
+    }
+    while(is_duplicated(pid));
     //set_pcb(pcb_ant, name, pid, status, priority, time_exp);
     pcb_node* pcb_ant = new pcb_node();
     pcb_ant->pcb_data = c_pcb(name, pid, status, priority, time_exp, time_reach);
 
     insert_node(ready_list, get_length(ready_list) + 1, pcb_ant);
-    cout << ready_list << endl;
-    cout << "Process created successfully!\n" << endl;
+    text_color(0x0a);
+    cout << "Process " << pcb_ant->pcb_data.name <<" created successfully!\n" << endl;
+    text_color(0x07);
 
 }
 
-void cpu::delete_process(){
+bool cpu::delete_process(int pid){
+    p_node temp;
+    temp = running;
+    if(temp != NULL){
+        if(temp->pcb_data.pid == pid){
+            running = NULL;
+            text_color(0x0a);
+            cout << "Process " << temp->pcb_data.pid <<" deleted successfully!\n" << endl;
+            text_color(0x07);
+            return true;
+        }
+    }
+    temp = ready_list;
+    while(temp->next != NULL){
 
+        if(temp->next->pcb_data.pid == pid){
+            text_color(0x0a);
+            cout << "Process " << temp->next->pcb_data.pid <<" deleted successfully!\n" << endl;
+            text_color(0x07);
+            temp->next = temp->next->next;
+            return true;
+        }
+        temp = temp->next;
+    }
+
+    temp = blocked_list;
+    while(temp->next != NULL){
+
+        if(temp->next->pcb_data.pid == pid){
+            text_color(0x0a);
+            cout << "Process " << temp->next->pcb_data.pid <<" deleted successfully!\n" << endl;
+            text_color(0x07);
+            temp->next = temp->next->next;
+            return true;
+        }
+        temp = temp->next;
+    }
+    text_color(0x0c);
+    cout << "Process not found." << endl << endl;
+    text_color(0x07);
 }
 
 void cpu::block_process(){
 
-    running->pcb_data.status = 1;
+    running->pcb_data.status = STATUS_BLOCKED;
     insert_node(blocked_list, get_length(blocked_list), running);
     running = NULL;
     //delete_node(ready_list);
@@ -162,17 +204,18 @@ void cpu::wakeup_process(){
 
 void cpu::run_process(){
         delete_node(ready_list);
-        ant_cpu.print_status();
+
         if(running->pcb_data.time_left > 0){
             running->pcb_data.priority --;
             running->pcb_data.time_left --;
+
             if(running->pcb_data.time_left == 0){
                 running->pcb_data.status = STATUS_FINISHED;
                 insert_node(finished_list, get_length(finished_list) + 1, running);
                 running = NULL;
             }
         }
-
+        ant_cpu.print_status();
 
         //cout << running->pcb_data.name << " is running." << endl;
 }
@@ -224,7 +267,7 @@ void cpu::sort_priority(link_list process_list, int length){
                 set_node(process_list, j, get_node(process_list, j + 1, 0));
                 set_node(process_list, j + 1, tmp);
             }else if(get_node(process_list, j, 0).priority == get_node(process_list, j + 1, 0).priority){
-                if(get_node(process_list, j, 0).time_reach < get_node(process_list, j + 1, 0).time_reach){
+                if(get_node(process_list, j, 0).time_reach > get_node(process_list, j + 1, 0).time_reach){
                     tmp = get_node(process_list, j, 0);
                     set_node(process_list, j, get_node(process_list, j + 1, 0));
                     set_node(process_list, j + 1, tmp);
@@ -258,14 +301,13 @@ link_list create_list(){
  */
 bool insert_node(p_node head, int position, p_node pcb_node_){
     int i = 0;
-    cout << "length:" << position << endl;
     p_node temp_f = head, temp_b;
-    while(temp_f->next != NULL){
+    while(temp_f->next != NULL && i < position){
         temp_f = temp_f->next;
 
     }
     //cout << "temp_f:" << temp_f->pcb_data.name << endl;
-   // temp_b = temp_f->next;
+    temp_b = temp_f->next;
     if(temp_f == NULL){
         return false;
     }
@@ -284,8 +326,7 @@ bool insert_node(p_node head, int position, p_node pcb_node_){
         cout << "node_process->data:" << node_process->pcb_data.name << endl;
 */
         temp_f->next = pcb_node_;
-        //temp_f = temp_f->next;
-        pcb_node_->next = NULL;
+        pcb_node_->next = temp_b;
         //cout << "tmp_b:" << temp_b << endl;
 
    // }
@@ -316,7 +357,43 @@ c_pcb get_node(link_list head, int position, int flag){
     }
     return tmp->pcb_data;
 }
+bool is_duplicated(int pid){
+    p_node temp;
+    temp = running;
+    if(temp != NULL){
+        if(temp->pcb_data.pid == pid){
+            text_color(0x0c);
+            cout << "Process " << temp->pcb_data.pid <<" has been created, please try another pid:\n" << endl;
+            text_color(0x07);
+            return true;
+        }
+    }
+    temp = ready_list;
+    while(temp->next != NULL){
 
+        if(temp->next->pcb_data.pid == pid){
+            text_color(0x0c);
+            cout << "Process " << temp->next->pcb_data.pid <<" has been created, please try another pid:\n" << endl;
+            text_color(0x07);
+            temp->next = temp->next->next;
+            return true;
+        }
+        temp = temp->next;
+    }
+
+    temp = blocked_list;
+    while(temp->next != NULL){
+
+        if(temp->next->pcb_data.pid == pid){
+            text_color(0x0c);
+            cout << "Process " << temp->next->pcb_data.pid <<" has been created, please try another pid:\n" << endl;
+            text_color(0x07);
+            temp->next = temp->next->next;
+            return true;
+        }
+        temp = temp->next;
+    }
+}
 void delete_node(link_list head){
     if(head->next == NULL){
             cout << "NULL" << endl;
@@ -373,13 +450,17 @@ int main()
 
         }
         else if(option == '2'){
-
+            int pid;
+            cout << "Please type in the pid of the process to delete: ";
+            cin >> pid;
+            ant_cpu.delete_process(pid);
         }
         else if(option == '3'){
             if(running == NULL){
                 text_color(0x0c);
                 cout << "No process running, please run a process." << endl << endl;
                 text_color(0x07);
+                //ant_cpu.print_status();
                 continue;
             }
             ant_cpu.block_process();
@@ -390,6 +471,7 @@ int main()
                 text_color(0x0c);
                 cout << "No process to wake up." << endl << endl;
                 text_color(0x07);
+                //ant_cpu.print_status();
                 continue;
             }
             ant_cpu.wakeup_process();
@@ -407,6 +489,7 @@ int main()
                 text_color(0x0c);
                 cout << "No process exiting, please create a process." << endl << endl;
                 text_color(0x07);
+                ant_cpu.print_status();
                 continue;
             }
 
