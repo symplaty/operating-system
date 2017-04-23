@@ -234,8 +234,8 @@ link_list create_list(){
         text_color(0x0c);
         cout << "Failed to allocate memory." << endl;
         exit(-1);
-    }else{
-        //p_node tail = head->next;
+    }
+    else{
         head->next = NULL;
     }
     return head;
@@ -357,13 +357,16 @@ int main()
             //cin >> num;
             //for(int i = 0; i < num; i++)
                 ant_cpu.create_process();
-
+            //pcb_ant->pcb_data = c_pcb("12", 1, 1, 1, 1, 1);
+            //insert_node(ready_list, get_length(ready_list) + 1, pcb_ant);
             //ant_cpu.sort_priority(ready_list, get_length(ready_list));
 
 
-        }else if(option == '2'){
+        }
+        else if(option == '2'){
 
-        }else if(option == '3'){
+        }
+        else if(option == '3'){
             if(running == NULL){
                 text_color(0x0c);
                 cout << "No process running, please run a process." << endl << endl;
@@ -372,7 +375,8 @@ int main()
             }
             ant_cpu.block_process();
 
-        }else if(option == '4'){
+        }
+        else if(option == '4'){
             if(blocked_list->next == NULL){
                 text_color(0x0c);
                 cout << "No process to wake up." << endl << endl;
@@ -381,7 +385,8 @@ int main()
             }
             ant_cpu.wakeup_process();
 
-        }else if(option == '5'){
+        }
+        else if(option == '5'){
             running = ready_list->next;
 
             if(running == NULL){
