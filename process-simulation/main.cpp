@@ -69,9 +69,16 @@ typedef struct pcb{
     int time_wait;
 };
 */
-typedef struct pcb_node{
+typedef class pcb_node{
+    public:
     c_pcb pcb_data;
-    struct pcb_node *next = NULL;
+    pcb_node *next = NULL;
+
+    pcb_node(){}/*
+    pcb_node(c_pcb pcb){
+        this.pcb_data = pcb;
+    }
+*/
 }*link_list, *p_node;
 
 /*cpu class*/
@@ -91,7 +98,7 @@ public:
 
 
 /***** global variables definition *****/
-p_node pcb_ant = (p_node)malloc(sizeof(pcb_node));
+//p_node pcb_ant = (p_node)malloc(sizeof(pcb_node));
 cpu ant_cpu;
 p_node create_list();
 link_list ready_list = create_list();
@@ -125,6 +132,7 @@ void cpu::create_process(){
     cout << "            Priority: ";
     cin >> priority;
     //set_pcb(pcb_ant, name, pid, status, priority, time_exp);
+    pcb_node* pcb_ant = new pcb_node();
     pcb_ant->pcb_data = c_pcb(name, pid, status, priority, time_exp, time_reach);
 
     insert_node(ready_list, get_length(ready_list) + 1, pcb_ant);
@@ -141,7 +149,8 @@ void cpu::block_process(){
 
     running->pcb_data.status = 1;
     insert_node(blocked_list, get_length(blocked_list), running);
-    delete_node(ready_list);
+    running = NULL;
+    //delete_node(ready_list);
 }
 
 void cpu::wakeup_process(){
@@ -153,6 +162,7 @@ void cpu::wakeup_process(){
 
 void cpu::run_process(){
         delete_node(ready_list);
+        ant_cpu.print_status();
         if(running->pcb_data.time_left > 0){
             running->pcb_data.priority --;
             running->pcb_data.time_left --;
@@ -163,10 +173,7 @@ void cpu::run_process(){
             }
         }
 
-        if(running != NULL){
-          insert_node(ready_list, get_length(ready_list) + 1, running);
-          running = NULL;
-        }
+
         //cout << running->pcb_data.name << " is running." << endl;
 }
 
@@ -251,33 +258,37 @@ link_list create_list(){
  */
 bool insert_node(p_node head, int position, p_node pcb_node_){
     int i = 0;
+    cout << "length:" << position << endl;
     p_node temp_f = head, temp_b;
-    while(temp_f->next != NULL && i < position){
+    while(temp_f->next != NULL){
         temp_f = temp_f->next;
-        i++;
+
     }
-    cout << "temp_f:" << temp_f << endl;
-    temp_b = temp_f->next;
-    if(temp_f == NULL || i > position){
+    //cout << "temp_f:" << temp_f->pcb_data.name << endl;
+   // temp_b = temp_f->next;
+    if(temp_f == NULL){
         return false;
     }
-    p_node node_process = (p_node)malloc(sizeof(pcb_node));
+    //p_node node_process = (p_node)malloc(sizeof(pcb_node));
+    //p_node node_process = new pcb_node()
+/*
     if(node_process == NULL){
         text_color(0x0c);
         cout << "Failed to allocate memory." << endl;
         exit(-1);
-    }else{
+    }else{*/
+        /*
         cout << "node_process->data:" << &node_process->pcb_data << endl;
         cout << "pcb_node_->data:" << pcb_node_->pcb_data.name << endl;
         node_process->pcb_data = pcb_node_->pcb_data;
         cout << "node_process->data:" << node_process->pcb_data.name << endl;
-
-        temp_f->next = node_process;
+*/
+        temp_f->next = pcb_node_;
         //temp_f = temp_f->next;
-        node_process->next = temp_b;
-        cout << "tmp_b:" << temp_b << endl;
+        pcb_node_->next = NULL;
+        //cout << "tmp_b:" << temp_b << endl;
 
-    }
+   // }
 
 }
 
@@ -312,7 +323,7 @@ void delete_node(link_list head){
         exit(-1);
     }
     head->next = head->next->next;
-    cout << "DELETE:" << head->next << endl;
+    //cout << "DELETE:" << head->next << endl;
 }
 bool is_list_empty(link_list process_list){
     if(process_list->next == NULL) return true;
@@ -357,9 +368,7 @@ int main()
             //cin >> num;
             //for(int i = 0; i < num; i++)
                 ant_cpu.create_process();
-            //pcb_ant->pcb_data = c_pcb("12", 1, 1, 1, 1, 1);
-            //insert_node(ready_list, get_length(ready_list) + 1, pcb_ant);
-            //ant_cpu.sort_priority(ready_list, get_length(ready_list));
+            ant_cpu.sort_priority(ready_list, get_length(ready_list));
 
 
         }
@@ -387,6 +396,11 @@ int main()
 
         }
         else if(option == '5'){
+            if(running != NULL){
+                insert_node(ready_list, get_length(ready_list) + 1, running);
+                ant_cpu.sort_priority(ready_list, get_length(ready_list));
+                running = NULL;
+            }
             running = ready_list->next;
 
             if(running == NULL){
@@ -398,12 +412,16 @@ int main()
 
             running->pcb_data.status = STATUS_RUNNING;
             ant_cpu.run_process();
+
         }
         else if(option == 'q'){
             break;
         }
 
-        ant_cpu.print_status();
+
+
+        if(option != '5')
+            ant_cpu.print_status();
         cpu_time++;
 
     }
