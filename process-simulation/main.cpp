@@ -127,7 +127,6 @@ void cpu::create_process(){
     //set_pcb(pcb_ant, name, pid, status, priority, time_exp);
     pcb_ant->pcb_data = c_pcb(name, pid, status, priority, time_exp, time_reach);
 
-    cout << "length:" << get_length(ready_list) + 1 << endl;
     insert_node(ready_list, get_length(ready_list) + 1, pcb_ant);
     cout << ready_list << endl;
     cout << "Process created successfully!\n" << endl;
@@ -244,7 +243,7 @@ link_list create_list(){
 
 /** \brief say we have a list head(0)->1->2->3, and we want to insert a node called x at position 2
  *         then we should put it after node 1(position - 1), which should like head(0)->1->x->2->3
- *         in this case, max position value is 3(length of the list, except head node)
+ *         in this case, max position value is 3(length of the list, except head node, included)
  * \param position: where to put new node. starts from 1
  * \param
  * \return
@@ -257,6 +256,7 @@ bool insert_node(p_node head, int position, p_node pcb_node_){
         temp_f = temp_f->next;
         i++;
     }
+    cout << "temp_f:" << temp_f << endl;
     temp_b = temp_f->next;
     if(temp_f == NULL || i > position){
         return false;
@@ -273,6 +273,7 @@ bool insert_node(p_node head, int position, p_node pcb_node_){
         cout << "node_process->data:" << node_process->pcb_data.name << endl;
 
         temp_f->next = node_process;
+        //temp_f = temp_f->next;
         node_process->next = temp_b;
         cout << "tmp_b:" << temp_b << endl;
 
@@ -357,7 +358,7 @@ int main()
             //for(int i = 0; i < num; i++)
                 ant_cpu.create_process();
 
-            ant_cpu.sort_priority(ready_list, get_length(ready_list));
+            //ant_cpu.sort_priority(ready_list, get_length(ready_list));
 
 
         }else if(option == '2'){
