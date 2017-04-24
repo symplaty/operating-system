@@ -1,6 +1,0 @@
-# depslib dependency file v1.0
-1493009695 source:d:\mydocuments\coding\github\operating-system\process-simulation\main.cpp
-	<iostream>
-	<windows.h>
-	<stdio.h>
-
