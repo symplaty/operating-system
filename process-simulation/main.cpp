@@ -203,7 +203,7 @@ void cpu::block_process(){
 }
 
 void cpu::wakeup_process(){
-    blocked_list->next->pcb_data.status = 0;
+    blocked_list->next->pcb_data.status = STATUS_READY;
     insert_node(ready_list, get_length(ready_list), blocked_list->next);
     ant_cpu.sort_priority(ready_list, get_length(ready_list));
     delete_node(blocked_list);
