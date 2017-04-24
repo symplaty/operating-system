@@ -121,7 +121,7 @@ void cpu::create_process(){
     string name; int pid; int time_exp; int priority;
     int status = STATUS_READY;
     int time_reach = cpu_time;
-    do{
+    while(1){
         text_color(0x07);
         cout << "You are creating a new process, please type in the info:" << endl;
         cout << "        Process name: ";
@@ -132,16 +132,23 @@ void cpu::create_process(){
         cin >> time_exp;
         cout << "            Priority: ";
         cin >> priority;
-    }
-    while(is_duplicated(pid));
-    //set_pcb(pcb_ant, name, pid, status, priority, time_exp);
-    pcb_node* pcb_ant = new pcb_node();
-    pcb_ant->pcb_data = c_pcb(name, pid, status, priority, time_exp, time_reach);
+        cout << "length1:" << get_length(ready_list) << endl;
+        if(!is_duplicated(pid)){
 
-    insert_node(ready_list, get_length(ready_list) + 1, pcb_ant);
-    text_color(0x0a);
-    cout << "Process " << pcb_ant->pcb_data.name <<" created successfully!\n" << endl;
-    text_color(0x07);
+            //set_pcb(pcb_ant, name, pid, status, priority, time_exp);
+            pcb_node* pcb_ant = new pcb_node();
+            pcb_ant->pcb_data = c_pcb(name, pid, status, priority, time_exp, time_reach);
+            cout << "length2:" << get_length(ready_list) << endl;
+            insert_node(ready_list, get_length(ready_list) + 1, pcb_ant);
+            text_color(0x0a);
+            cout << "Process " << pcb_ant->pcb_data.name <<" created successfully!\n" << endl;
+            text_color(0x07);
+            break;
+        }
+        cout << "length3:" << get_length(ready_list) << endl;
+    }
+
+
 
 }
 
@@ -223,7 +230,7 @@ void cpu::run_process(){
 void cpu::print_status(){
     text_color(0x0e);
     cout << "Present CPU time: " << cpu_time << endl;
-    cout << "------------------------------------------------------------" << endl << endl;
+    cout << "------------------------------------------------------------" << endl;
     cout << "Running Process: " << endl;
     if(running == NULL){
         cout << "No running process." << endl << endl;
@@ -375,7 +382,6 @@ bool is_duplicated(int pid){
             text_color(0x0c);
             cout << "Process " << temp->next->pcb_data.pid <<" has been created, please try another pid:\n" << endl;
             text_color(0x07);
-            temp->next = temp->next->next;
             return true;
         }
         temp = temp->next;
@@ -388,7 +394,6 @@ bool is_duplicated(int pid){
             text_color(0x0c);
             cout << "Process " << temp->next->pcb_data.pid <<" has been created, please try another pid:\n" << endl;
             text_color(0x07);
-            temp->next = temp->next->next;
             return true;
         }
         temp = temp->next;
