@@ -15,6 +15,9 @@ typedef struct node{
 //function declaration
 link_list create_list();
 //void insert_node(mem_node head, mem_node new_node);
+int is_valid(int start_addr, int mem_size);
+void merge_mem(int start_addr, int mem_size);
+void print_status();
 
 //global variable definition
 link_list available_mem, occupied_mem;
@@ -54,23 +57,98 @@ void set_node(mem_node node, int start_addr, int mem_size){
 
 void create_partitions(){
     int start_addr, mem_size;
-    printf("Please type in the info:\n");
-    printf("Partition Start Address:");
-    scanf("%d", &start_addr);
-    printf("         Partition size:");
-    scanf("%d", &mem_size);
-    printf("\n");
-    insert_node(available_mem, start_addr, mem_size);
+    while(1){
+        printf("Please type in the info:\n");
+        printf("Partition Start Address:");
+        scanf("%d", &start_addr);
+        printf("         Partition size:");
+        scanf("%d", &mem_size);
+        printf("\n");
+        if(is_valid(start_addr, mem_size)){
+            /*
+            if(merge_mem(start_addr, mem_size) == 1){
+
+            }
+            else if(merge_mem(start_addr, mem_size) == 2){
+                insert_node(available_mem, start_addr, mem_size);
+            }
+            else if(merge_mem(start_addr, mem_size) == 3){
+
+            }
+            else{
+                insert_node(available_mem, start_addr, mem_size);
+            }
+            */
+            insert_node(available_mem, start_addr, mem_size);
+            text_color(0x0a);
+            printf("Success to create a partition\n");
+            break;
+        }
+
+    }
+
+
+}
+
+/** 1~1, 3~5,
+    now create a partition
+    2~2(true)
+    2~3(false)
+    2~4(false)
+    2~5(false)
+    2~6(should be false, but it is true)
+**/
+
+int is_valid(int start_addr, int mem_size){
+    mem_node tmp = available_mem;
+    while(tmp->next != NULL){
+        tmp = tmp->next;
+        if(start_addr >= tmp->start_addr && start_addr < tmp->start_addr + tmp->mem_size || start_addr + mem_size - 1 < tmp->start_addr + tmp->mem_size && start_addr + mem_size - 1 >= tmp->start_addr){
+            text_color(0x0c);
+            printf("Invalid start address or size, please try again.\n");
+            text_color(0x07);
+            print_status();
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void merge_mem(int start_addr, int mem_size){
+    mem_node tmp = available_mem;
+    while(tmp->next != NULL){
+        tmp = tmp->next;
+        if(start_addr == tmp->start_addr + tmp->mem_size){
+            tmp->mem_size += mem_size;
+            //return 1; // 1~1, new partition 2~3, get 1~3;
+        }
+        else if(start_addr + mem_size == tmp->start_addr - 1){
+            mem_size += tmp->mem_size;
+
+            //return 2;
+        }
+    }
+}
+
+void allocate_mem(){
 
 }
 
 void print_status(){
     mem_node tmp = available_mem;
     printf("\n");
+    text_color(0x0e);
+    printf("%d available partition(s) in total.\n", get_length(available_mem));
+    printf("----------------------------------------------\n");
+    printf("--- START-ADDRESS\tSIZE\tRANGE      ---\n");
+    //printf("-----------------------------------------\n");
     while(tmp->next != NULL){
         tmp = tmp->next;
-        printf("%d\n", tmp->mem_size);
+        printf("--- %-12d\t%-4d\t%-4d~%4d  ---\n", tmp->start_addr, tmp->mem_size, tmp->start_addr, tmp->start_addr + tmp->mem_size - 1);
+       // printf("-----------------------------------------\n");
     }
+    printf("----------------------------------------------\n\n");
+    text_color(0x07);
 
 }
 
@@ -108,13 +186,18 @@ int main()
         scanf("%c", &option);
 
         if(option == '1'){
-            int num;
-            printf("Please type in the number of partitions: ");
-            scanf("%d", &num);
+            //int num;
+            //printf("Please type in the number of partitions: ");
+            //scanf("%d", &num);
             printf("\n");
-            int i;
-            for(i = 0; i < num; i++)
+            //int i;
+            //for(i = 0; i < num; i++)
                 create_partitions();
+
+            text_color(0x0a);
+            //printf("Success to create %d partition(s).\n", num);
+
+            text_color(0x07);
         }
         else if(option == '2'){
 
