@@ -65,24 +65,11 @@ void create_partitions(){
         scanf("%d", &mem_size);
         printf("\n");
         if(is_valid(start_addr, mem_size)){
-            /*
-            if(merge_mem(start_addr, mem_size) == 1){
-
-            }
-            else if(merge_mem(start_addr, mem_size) == 2){
-                insert_node(available_mem, start_addr, mem_size);
-            }
-            else if(merge_mem(start_addr, mem_size) == 3){
-
-            }
-            else{
-                insert_node(available_mem, start_addr, mem_size);
-            }
-            */
             insert_node(available_mem, start_addr, mem_size);
             int i, length = get_length(available_mem);
-            for(i = 0; i < length; i ++)
+            //for(i = 0; i < length; i ++)
                 merge_mem();
+            sort_mem(available_mem);
             text_color(0x0a);
             printf("Success to create a partition\n");
             break;
@@ -93,7 +80,7 @@ void create_partitions(){
 
 }
 
-/*delete the current node*/
+/* delete a node after the current node */
 void delete_node(mem_node current){
     if(current != NULL){
         current->next = current->next->next;
@@ -114,7 +101,7 @@ void delete_node(mem_node current){
     2~5(false)
     2~6(should be false, but it is true)
 **/
-
+/* to see if the new partition conflicts with exited partitions */
 int is_valid(int start_addr, int mem_size){
     mem_node tmp = available_mem;
     while(tmp->next != NULL){
@@ -130,14 +117,16 @@ int is_valid(int start_addr, int mem_size){
     return 1;
 }
 
+/* merge partitions when they are continuous */
 void merge_mem(){
-    mem_node tmp_i= available_mem;
-    mem_node tmp_j= available_mem;
-    mem_node tmp_a= available_mem;
-    mem_node tmp_b= available_mem;
+    mem_node tmp_i = available_mem;
+    mem_node tmp_j = available_mem;
+    mem_node tmp_a = available_mem;
+    mem_node tmp_b = available_mem;
     while(tmp_i->next != NULL){
         tmp_a = tmp_i;
         tmp_i = tmp_i->next;
+        tmp_j = available_mem;
         while(tmp_j->next != NULL){
             tmp_b = tmp_j;
             tmp_j = tmp_j->next;
@@ -150,8 +139,6 @@ void merge_mem(){
                 delete_node(tmp_a);
             }
         }
-
-
     }
 }
 
@@ -159,8 +146,30 @@ void allocate_mem(){
 
 }
 
-void sort_mem(){
-
+/* order the list by size ascending, if the size are the same, order it by start address ascending */
+void sort_mem(link_list head){
+    mem_node tmp_i = head;
+    mem_node tmp_j = head;
+    //int i = 0, j = 0;
+    while(tmp_i->next != NULL){
+        tmp_i = tmp_i->next;
+        tmp_j = tmp_i;
+        while(tmp_j->next != NULL){
+            tmp_j = tmp_j->next;
+            if(tmp_i->mem_size > tmp_j->mem_size){
+                mem_node tmp = (mem_node)malloc(sizeof(struct node));
+                tmp->mem_size = tmp_i->mem_size; tmp_i->mem_size = tmp_j->mem_size; tmp_j->mem_size = tmp->mem_size;
+                tmp->start_addr = tmp_i->start_addr; tmp_i->start_addr = tmp_j->start_addr; tmp_j->start_addr = tmp->start_addr;
+            }
+            else if(tmp_i->mem_size == tmp_j->mem_size){
+                if(tmp_i->start_addr > tmp_j->start_addr){
+                    mem_node tmp = (mem_node)malloc(sizeof(struct node));
+                    tmp->mem_size = tmp_i->mem_size; tmp_i->mem_size = tmp_j->mem_size; tmp_j->mem_size = tmp->mem_size;
+                    tmp->start_addr = tmp_i->start_addr; tmp_i->start_addr = tmp_j->start_addr; tmp_j->start_addr = tmp->start_addr;
+                }
+            }
+        }
+    }
 }
 
 void print_status(){
