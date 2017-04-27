@@ -16,7 +16,7 @@ typedef struct node{
 link_list create_list();
 //void insert_node(mem_node head, mem_node new_node);
 int is_valid(int start_addr, int mem_size);
-void merge_mem(int start_addr, int mem_size);
+//void merge_mem(int start_addr, int mem_size);
 void print_status();
 
 //global variable definition
@@ -80,6 +80,9 @@ void create_partitions(){
             }
             */
             insert_node(available_mem, start_addr, mem_size);
+            int i;
+            for(i = 0; i < get_length(available_mem); i ++)
+                merge_mem();
             text_color(0x0a);
             printf("Success to create a partition\n");
             break;
@@ -88,6 +91,19 @@ void create_partitions(){
     }
 
 
+}
+
+/*delete the current node*/
+void delete_node(mem_node current){
+    if(current != NULL){
+        current->next = current->next->next;
+    }
+    else{
+        text_color(0x0c);
+        printf("No partition to delete.");
+        text_color(0x07);
+        exit(-1);
+    }
 }
 
 /** 1~1, 3~5,
@@ -114,23 +130,36 @@ int is_valid(int start_addr, int mem_size){
     return 1;
 }
 
-void merge_mem(int start_addr, int mem_size){
-    mem_node tmp = available_mem;
-    while(tmp->next != NULL){
-        tmp = tmp->next;
-        if(start_addr == tmp->start_addr + tmp->mem_size){
-            tmp->mem_size += mem_size;
-            //return 1; // 1~1, new partition 2~3, get 1~3;
+void merge_mem(){
+    mem_node tmp_i= available_mem;
+    mem_node tmp_j= available_mem;
+    mem_node tmp_a= available_mem;
+    mem_node tmp_b= available_mem;
+    while(tmp_i->next != NULL){
+        tmp_a = tmp_i;
+        tmp_i = tmp_i->next;
+        while(tmp_j->next != NULL){
+            tmp_b = tmp_j;
+            tmp_j = tmp_j->next;
+            if(tmp_i->start_addr + tmp_i->mem_size  == tmp_j->start_addr){
+                tmp_i->mem_size += tmp_j->mem_size;
+                delete_node(tmp_b);
+            }
+            else if(tmp_j->start_addr + tmp_j->mem_size  == tmp_i->start_addr){
+                tmp_j->mem_size += tmp_i->mem_size;
+                delete_node(tmp_a);
+            }
         }
-        else if(start_addr + mem_size == tmp->start_addr - 1){
-            mem_size += tmp->mem_size;
 
-            //return 2;
-        }
+
     }
 }
 
 void allocate_mem(){
+
+}
+
+void sort_mem(){
 
 }
 
