@@ -80,8 +80,8 @@ void create_partitions(){
             }
             */
             insert_node(available_mem, start_addr, mem_size);
-            int i;
-            for(i = 0; i < get_length(available_mem); i ++)
+            int i, length = get_length(available_mem);
+            for(i = 0; i < length; i ++)
                 merge_mem();
             text_color(0x0a);
             printf("Success to create a partition\n");
