@@ -1,14 +1,12 @@
 /**
-*   o means checked and x means unchecked
+*   'o' means checked and 'x' means unchecked
 *   create partition    o
 *   sort memory size    o
 *   delete a partition  o
 *   allocate memory     o
 *   duplication check   x
-*   free memory         x
+*   free memory         o
 **/
-
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -194,7 +192,23 @@ void allocate_mem(){
 }
 
 void free_mem(){
+    int pid;
+    printf("ID of process: ");
+    scanf("%d", &pid);
 
+    mem_node tmp = occupied_mem;
+    mem_node tmp_before = occupied_mem;
+    while(tmp->next != NULL){
+        tmp_before = tmp;
+        tmp = tmp->next;
+        if(tmp->pid == pid){
+            insert_node(available_mem, tmp->start_addr, tmp->mem_size);
+            merge_mem();
+            sort_mem(available_mem);
+
+            delete_node(tmp_before);
+        }
+    }
 }
 
 /* order the list by size ascending, if the size are the same, order it by start address ascending */
@@ -310,7 +324,7 @@ int main()
             allocate_mem();
         }
         else if(option == '3'){
-
+            free_mem();
         }
         else if(option == 'q'){
             break;
