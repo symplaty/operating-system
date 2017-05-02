@@ -1,3 +1,15 @@
+/**
+*   o means checked and x means unchecked
+*   create partition    o
+*   sort memory size    o
+*   delete a partition  o
+*   allocate memory     o
+*   duplication check   x
+*   free memory         x
+**/
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -9,6 +21,7 @@ void text_color(int color){
 typedef struct node{
     int start_addr;
     int mem_size;
+    int pid;
     struct node *next;
 }*mem_node, *link_list;
 
@@ -143,6 +156,44 @@ void merge_mem(){
 }
 
 void allocate_mem(){
+    int pid, size;
+    printf(" ID of process: ");
+    scanf("%d", &pid);
+    printf("Size of memory: ");
+    scanf("%d", &size);
+
+    link_list tmp = available_mem;
+    mem_node tmp_o = occupied_mem;
+    int flag = 0;
+    while(tmp->next != NULL){
+        mem_node tmp_before = tmp;
+        tmp = tmp->next;
+        if(tmp->mem_size >= size){
+            flag = 1;
+            insert_node(occupied_mem, tmp->start_addr, size);
+            while(tmp_o->next != NULL){
+                tmp_o = tmp_o->next;
+            }
+            tmp_o->pid = pid;
+
+            tmp->start_addr += size;
+            tmp->mem_size -= size;
+            if(tmp->mem_size <= 0){
+
+                delete_node(tmp_before);
+            }
+            sort_mem(available_mem);
+            break;
+        }
+    }
+    if(flag == 0){
+        text_color(0x0c);
+        printf("No enough memory for the process.\n");
+        text_color(0x07);
+    }
+}
+
+void free_mem(){
 
 }
 
@@ -174,8 +225,25 @@ void sort_mem(link_list head){
 
 void print_status(){
     mem_node tmp = available_mem;
+    mem_node tmp_o = occupied_mem;
+
     printf("\n");
     text_color(0x0e);
+    printf("STATUS:\n");
+    printf("%d occupied partition(s) in total.\n", get_length(occupied_mem));
+    printf("--------------------------------------------------------\n");
+    printf("--- START-ADDRESS\tSIZE\tRANGE\t\tPID  ---\n");
+    //printf("-----------------------------------------\n");
+    while(tmp_o->next != NULL){
+        tmp_o = tmp_o->next;
+        printf("--- %-12d\t%-4d\t%-4d~%4d\t%-4d ---\n", tmp_o->start_addr, tmp_o->mem_size, tmp_o->start_addr, tmp_o->start_addr + tmp_o->mem_size - 1, tmp_o->pid);
+       // printf("-----------------------------------------\n");
+    }
+    printf("--------------------------------------------------------\n\n");
+    //text_color(0x07);
+
+    //printf("\n");
+    //text_color(0x0e);
     printf("%d available partition(s) in total.\n", get_length(available_mem));
     printf("----------------------------------------------\n");
     printf("--- START-ADDRESS\tSIZE\tRANGE      ---\n");
@@ -192,7 +260,7 @@ void print_status(){
 
 int get_length(link_list head){
     int length = 0;
-    mem_node tmp = available_mem;
+    mem_node tmp = head;
     while(tmp->next != NULL){
         tmp = tmp->next;
         length++;
@@ -217,6 +285,7 @@ int main()
     //text_color(0x0c);
     //mem_node tmp = (mem_node)malloc(sizeof(struct node));
     available_mem = create_list();
+    occupied_mem = create_list();
     char option;
     while(1){
         print_menu();
@@ -238,7 +307,7 @@ int main()
             text_color(0x07);
         }
         else if(option == '2'){
-
+            allocate_mem();
         }
         else if(option == '3'){
 
