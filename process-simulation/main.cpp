@@ -53,22 +53,6 @@ public:
 
 };
 
-
-/*pcb structure*/
-/*
-typedef struct pcb{
-    string name;        // name of process
-    int pid;            // id for process
-    int status;         // status of process
-    int priority;       // priority of the process
-    int time_create;    // when the process is create
-    int time_begin;     // when the process begins
-    int time_exp;       // time slice(s) expected for the process
-    int time_end;       // when the process ends
-    int time_left;
-    int time_wait;
-};
-*/
 typedef class pcb_node{
     public:
     c_pcb pcb_data;
@@ -132,20 +116,20 @@ void cpu::create_process(){
         cin >> time_exp;
         cout << "            Priority: ";
         cin >> priority;
-        cout << "length1:" << get_length(ready_list) << endl;
+        //cout << "length1:" << get_length(ready_list) << endl;
         if(!is_duplicated(pid)){
 
             //set_pcb(pcb_ant, name, pid, status, priority, time_exp);
             pcb_node* pcb_ant = new pcb_node();
             pcb_ant->pcb_data = c_pcb(name, pid, status, priority, time_exp, time_reach);
-            cout << "length2:" << get_length(ready_list) << endl;
+            //cout << "length2:" << get_length(ready_list) << endl;
             insert_node(ready_list, get_length(ready_list) + 1, pcb_ant);
             text_color(0x0a);
             cout << "Process " << pcb_ant->pcb_data.name <<" created successfully!\n" << endl;
             text_color(0x07);
             break;
         }
-        cout << "length3:" << get_length(ready_list) << endl;
+        //cout << "length3:" << get_length(ready_list) << endl;
     }
 
 
@@ -235,30 +219,30 @@ void cpu::print_status(){
     if(running == NULL){
         cout << "No running process." << endl << endl;
     }else{
-        printf("PID\tNAME\tPRIORITY\tSTATUS\t\tTIME-LEFT\t\n");
+        printf("PID\tNAME\tPRIORITY\tSTATUS\t\tTIME-LEFT\tTIME-REACH\n");
         //text_color(0x0a);
         printf("%-8d", running->pcb_data.pid);
         cout << running->pcb_data.name;
-        printf("\t%-8d\t%-8d\t%-4d\n", running->pcb_data.priority, running->pcb_data.status, running->pcb_data.time_left);
+        printf("\t%-8d\t%-8d\t%-16d%-4d\n", running->pcb_data.priority, running->pcb_data.status, running->pcb_data.time_left, running->pcb_data.time_reach);
         cout << endl;
     }
 
     cout << "Ready List: " << endl;
-    printf("PID\tNAME\tPRIORITY\tSTATUS\t\tTIME-LEFT\t\n");
+    printf("PID\tNAME\tPRIORITY\tSTATUS\t\tTIME-LEFT\tTIME-REACH\n");
     //text_color(0x0a);
     for(int i = 1; i <= get_length(ready_list); i++)
         get_node(ready_list, i, 1);
     cout << endl;
 
     cout << "Blocked List: " << endl;
-    printf("PID\tNAME\tPRIORITY\tSTATUS\t\tTIME-LEFT\t\n");
+    printf("PID\tNAME\tPRIORITY\tSTATUS\t\tTIME-LEFT\tTIME-REACH\n");
     //text_color(0x0a);
     for(int i = 1; i <= get_length(blocked_list); i++)
         get_node(blocked_list, i, 1);
     cout << endl;
 
     cout << "Finished List: " << endl;
-    printf("PID\tNAME\tPRIORITY\tSTATUS\t\tTIME-LEFT\t\n");
+    printf("PID\tNAME\tPRIORITY\tSTATUS\t\tTIME-LEFT\tTIME-REACH\n");
     //text_color(0x0a);
     for(int i = 1; i <= get_length(finished_list); i++)
         get_node(finished_list, i, 1);
@@ -335,7 +319,6 @@ bool insert_node(p_node head, int position, p_node pcb_node_){
         temp_f->next = pcb_node_;
         pcb_node_->next = temp_b;
         //cout << "tmp_b:" << temp_b << endl;
-
    // }
 
 }
@@ -360,7 +343,7 @@ c_pcb get_node(link_list head, int position, int flag){
     if(flag){
         printf("%-8d", tmp->pcb_data.pid);
         cout << tmp->pcb_data.name;
-        printf("\t%-8d\t%-8d\t%-4d\n", tmp->pcb_data.priority, tmp->pcb_data.status, tmp->pcb_data.time_left);
+        printf("\t%-8d\t%-8d\t%-16d%-4d\n", tmp->pcb_data.priority, tmp->pcb_data.status, tmp->pcb_data.time_left, tmp->pcb_data.time_reach);
     }
     return tmp->pcb_data;
 }
@@ -436,10 +419,8 @@ void print_menu(){
     cout << "Please choose an option: ";
 }
 
-
 int main()
 {
-
     char option;
     while(1){
         print_menu();
@@ -451,8 +432,6 @@ int main()
             //for(int i = 0; i < num; i++)
                 ant_cpu.create_process();
             ant_cpu.sort_priority(ready_list, get_length(ready_list));
-
-
         }
         else if(option == '2'){
             int pid;
@@ -469,7 +448,6 @@ int main()
                 continue;
             }
             ant_cpu.block_process();
-
         }
         else if(option == '4'){
             if(blocked_list->next == NULL){
@@ -480,7 +458,6 @@ int main()
                 continue;
             }
             ant_cpu.wakeup_process();
-
         }
         else if(option == '5'){
             if(running != NULL){
@@ -505,14 +482,9 @@ int main()
         else if(option == 'q'){
             break;
         }
-
-
-
         if(option != '5')
             ant_cpu.print_status();
         cpu_time++;
-
     }
-
     return 0;
 }
